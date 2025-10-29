@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Fluffy Bingo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Pre-Game Lobby Overlay -->
+  <div id="lobby" class="modal" role="dialog" aria-modal="true" aria-labelledby="lobbyTitle">
+    <div class="modal-panel" tabindex="-1">
+      <h2 id="lobbyTitle">Pre-Game Lobby</h2>
+      <div class="lobby-section" aria-labelledby="roomSelectTitle">
+  <h3 id="roomSelectTitle" class="lobby-subtitle">Please choose a club</h3>
+        <div class="lobby-options" role="group" aria-label="Club choices">
+          <button class="lobby-btn" data-room="1" id="room1Btn" aria-label="Choose Club 1 (Currently in play)">Club 1 In play</button>
+          <button class="lobby-btn" data-room="2" id="room2Btn" aria-label="Choose Club 2 (Starting soon)">Club 2 starting soon</button>
+        </div>
+      </div>
+      <div class="lobby-section" aria-labelledby="stakeSelectTitle">
+  <h3 id="stakeSelectTitle" class="lobby-subtitle">Please choose your stake</h3>
+        <div class="lobby-options stake-options" role="group" aria-label="Stake options">
+          <button class="lobby-btn" data-stake="0.10" id="stake10pBtn" aria-label="Stake ten pence">10p</button>
+          <button class="lobby-btn" data-stake="0.25" id="stake25pBtn" aria-label="Stake twenty five pence">25p</button>
+          <button class="lobby-btn" data-stake="0.50" id="stake50pBtn" aria-label="Stake fifty pence">50p</button>
+          <button class="lobby-btn" data-stake="1" id="stake1Btn" aria-label="Stake one pound">£1</button>
+          <button class="lobby-btn" data-stake="2" id="stake2Btn" aria-label="Stake two pounds">£2</button>
+        </div>
+      </div>
+      <div class="lobby-section" aria-labelledby="shapeSelectTitle">
+  <h3 id="shapeSelectTitle" class="lobby-subtitle">Please choose your bonus shape</h3>
+        <div class="lobby-options" role="group" aria-label="Bonus shape choices">
+          <button class="lobby-btn" data-shape="triangle" id="shapeTriangleBtn" aria-label="Triangle shape">Triangle</button>
+          <button class="lobby-btn" data-shape="circle" id="shapeCircleBtn" aria-label="Circle shape">Circle</button>
+          <button class="lobby-btn" data-shape="square" id="shapeSquareBtn" aria-label="Square shape">Square</button>
+          <button class="lobby-btn" data-shape="diamond" id="shapeDiamondBtn" aria-label="Diamond shape">Diamond</button>
+        </div>
+      </div>
+      <div class="lobby-actions" aria-live="assertive" aria-atomic="true">
+        <div id="lobbyCountdown" class="lobby-countdown" hidden>
+          <span class="count-num" id="countNum">5</span>
+        </div>
+        <div id="lobbyReadyMsg" class="lobby-ready-msg" hidden>Starting in <span id="countInline">5</span>...</div>
+        <button id="startGameBtn" class="lobby-btn" aria-label="Start game" disabled>Start Game</button>
+      </div>
+    </div>
+  </div>
+  <header class="app-header" role="banner">
+  <h1>Fluffy Bingo!</h1>
+  <div class="draw-display" aria-live="polite" id="lastDraw"></div>
+    <div class="sr-only" id="winAnnouncement" aria-live="assertive"></div>
+  </header>
+
+  <main class="app-main">
+    <section class="ticket-section" aria-label="Your bingo tickets">
+  <div class="tickets-wrapper" style="position:relative;display:flex;flex-wrap:wrap;justify-content:center;">
+        <div class="progress-wrapper" aria-hidden="false" style="flex:1 1 100%;">
+          <div id="progressBar" class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0" aria-label="Full House progress">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+        </div>
+        <div class="single-ticket" aria-label="Ticket 1" style="position:relative;display:inline-block;">
+          <div id="ticket1" class="ticket" role="grid" aria-rowcount="5" aria-colcount="5"></div>
+          <div id="oneAwayContainer1" class="one-away-container" aria-hidden="true"></div>
+        </div>
+        <div class="single-ticket" aria-label="Ticket 2" style="position:relative;display:inline-block;">
+          <div id="ticket2" class="ticket" role="grid" aria-rowcount="5" aria-colcount="5"></div>
+          <div id="oneAwayContainer2" class="one-away-container" aria-hidden="true"></div>
+        </div>
+        <div class="single-ticket" aria-label="Ticket 3" style="position:relative;display:inline-block;">
+          <div id="ticket3" class="ticket" role="grid" aria-rowcount="5" aria-colcount="5"></div>
+          <div id="oneAwayContainer3" class="one-away-container" aria-hidden="true"></div>
+        </div>
+        <div class="prize-strip" aria-label="Prize values" id="prizeStrip" style="flex:1 1 100%;">
+          <div class="prize" data-prize="1" aria-label="1 line prize £2"><span class="prize-label">1L</span> <span class="prize-value">£2</span></div>
+          <div class="prize" data-prize="2" aria-label="2 line prize £4"><span class="prize-label">2L</span> <span class="prize-value">£4</span></div>
+          <div class="prize" data-prize="3" aria-label="3 line prize £6"><span class="prize-label">3L</span> <span class="prize-value">£6</span></div>
+          <div class="prize" data-prize="4" aria-label="4 line prize £8"><span class="prize-label">4L</span> <span class="prize-value">£8</span></div>
+          <div class="prize full" data-prize="full" aria-label="Full House prize £50"><span class="prize-label">Full House</span> <span class="prize-value">£50</span></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="controls" aria-label="Game controls">
+  <button id="drawBtn" class="btn primary" aria-label="Draw next number" data-sound="draw">Draw</button>
+  <button id="resetBtn" class="btn" aria-label="Reset game" data-sound="reset">Reset</button>
+  <button id="bonusBtn" class="btn" aria-label="Trigger Fluffy Bonus" data-sound="bonus">Fluffy Bonus</button>
+  <button id="oneTgGameBtn" class="btn" aria-label="Open One To Go mini game" data-sound="mini">1TG Game</button>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="oneAwayAnnounce" class="sr-only" aria-live="assertive"></div>
+  <div id="winModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="winModalTitle" hidden>
+    <div class="modal-panel" tabindex="-1">
+  <h2 id="winModalTitle">Congratulations!</h2>
+  <p class="modal-msg">You have won the Fluffy Full House Prize</p>
+      <div id="winConfettiContainer" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div id="lineModal" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="lineModalTitle" hidden>
+    <div class="modal-panel" tabindex="-1">
+      <h2 id="lineModalTitle">Line Prize!</h2>
+      <p id="lineModalMsg" class="modal-msg"></p>
+    </div>
+  </div>
+
+  <!-- Candy Bonus Modal -->
+  <div id="bonusModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="bonusModalTitle" hidden>
+    <div class="modal-panel bonus-panel" tabindex="-1">
+  <h2 id="bonusModalTitle">Fluffy Bonus Round</h2>
+  <p class="modal-msg" id="bonusIntro"></p>
+      <div class="claw-wrapper" aria-label="Claw machine" id="clawWrapper">
+        <div class="claw-machine" id="clawMachine">
+          <div class="claw-track"></div>
+          <div class="claw" id="claw" aria-hidden="true"></div>
+          <div class="prize-items" id="prizeItems" aria-live="off"></div>
+        </div>
+  <div class="claw-status" id="clawStatus" aria-live="polite"></div>
+        <div class="claw-winners" aria-label="Winners list">
+          <h3 class="claw-winners-title">Wins</h3>
+          <ul id="clawWinners" class="claw-winners-list" aria-live="polite" aria-atomic="false"></ul>
+        </div>
+      </div>
+      <!-- Claw controls removed: automated sequence -->
+      <div class="bonus-actions">
+        <button id="closeBonusBtn" class="btn" aria-label="Close bonus round">Close</button>
+      </div>
+      <div class="sr-only" id="bonusAnnounce" aria-live="assertive"></div>
+      <div id="confettiContainer" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <!-- Winners Panel Modal -->
+  <div id="winnersPanel" class="modal" role="dialog" aria-modal="true" aria-labelledby="winnersPanelTitle" hidden>
+    <div class="modal-panel winners-panel" tabindex="-1">
+      <h2 id="winnersPanelTitle">Well done winners!</h2>
+      <table class="winners-table" aria-label="List of bingo winners">
+        <thead>
+          <tr><th scope="col">Player</th><th scope="col">Prize</th></tr>
+        </thead>
+        <tbody id="winnersTableBody">
+          <tr><td>Bingo winner1</td><td>1L prize</td></tr>
+          <tr><td>Bingo winner2</td><td>2L prize</td></tr>
+          <tr><td>Bingo winner3</td><td>3L prize</td></tr>
+          <tr><td>Bingo winner4</td><td>4L prize</td></tr>
+          <tr><td>Bingo winner5</td><td>Full House prize</td></tr>
+        </tbody>
+      </table>
+      <div class="modal-actions">
+        <button id="closeWinnersBtn" class="btn" aria-label="Close winners panel">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1TG Game Modal -->
+  <div id="oneTgGameModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="oneTgGameTitle" hidden>
+    <div class="modal-panel one-tg-game-panel" tabindex="-1">
+      <h2 id="oneTgGameTitle">1TG Mini Game</h2>
+      <p class="modal-msg" id="oneTgGameIntro">Tap to reveal two circles. Highlighted values are yours!</p>
+      <div id="oneTgCircles" class="one-tg-circles" aria-live="polite" aria-label="Prize circles grid"></div>
+      <div class="modal-actions">
+        <button id="oneTgTapBtn" class="btn primary" aria-label="Tap to highlight two circles">Tap</button>
+        <button id="oneTgCloseBtn" class="btn" aria-label="Close 1TG mini game">Close</button>
+      </div>
+      <div class="sr-only" id="oneTgAnnounce" aria-live="assertive"></div>
+    </div>
+  </div>
+  <!-- 1TG Result Popup -->
+  <div id="oneTgResultModal" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="oneTgResultTitle" hidden>
+    <div class="modal-panel" tabindex="-1">
+      <h2 id="oneTgResultTitle">Result</h2>
+      <p class="modal-msg" id="oneTgResultMsg"></p>
+      <div class="modal-actions">
+        <button id="oneTgResultOkBtn" class="btn primary" aria-label="Close result popup">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
